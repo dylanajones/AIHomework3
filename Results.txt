@@ -1,0 +1,12 @@
+Results for just using the first rule of inference. If a square only has one
+possible value fill it in as that value. No backprop / guessing
+
+[['Easy', 23, 21], ['Medium', 21, 3], ['Hard', 18, 0], ['Evil', 15, 3]]
+
+------------------------------------------------------------------------------
+
+Results for using the first and second rule of inference. If a square has only
+one possible value or is the only one in its row / column / box that can take
+on that value fill it with that value
+
+[['Easy', 23, 23], ['Medium', 21, 21], ['Hard', 18, 14], ['Evil', 15, 3]]
