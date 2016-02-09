@@ -3,10 +3,10 @@
 
 # TODO:
 #   - Implement backtracking (ie trying a value and seeing how the puzzle goes)
-#       - Implement choosing based on most constrained
 #       - Implement based on which empty squre you see first
 #       - Implement tracker for number of backtracks needed
 #   - Implement naked triple rule
+#   - Comment code!
 
 import re
 import copy
@@ -164,13 +164,33 @@ def inference_rule_2(puzzle):
                                     count_b += 1
 
                     if count_r == 1 or count_c == 1 or count_b == 1:
+
+                        # Update everyone else
+                        for item in row_l:
+                            if not(item[0]):
+                                if item[1].count(guess) > 0:
+                                    item[1].remove(guess)
+
+                        for i in range(len(puzzle[1])):
+                            if not(puzzle[1][i][col][0]):
+                                if puzzle[1][i][col][1].count(guess) > 0:
+                                    puzzle[1][i][col][1].remove(guess)
+
+                        for i in range(int(row/3)*3,int(row/3)*3+3):
+                            for j in range(int(col/3)*3,int(col/3)*3+3):
+                                if not(puzzle[1][i][j][0]):
+                                    if puzzle[1][i][j][1].count(guess) > 0:
+                                        puzzle[1][i][j][1].remove(guess)
+
                         box[1] = [guess]
                         break
             col += 1
         row += 1
     return puzzle
 
-def solve_puzzle(puzzle):
+def solve_puzzle(puzzle, depth):
+
+    print "solve_puzzle called"
 
     puzzle = inference_rule_1(copy.deepcopy(puzzle))
     puzzle = inference_rule_2(copy.deepcopy(puzzle))
@@ -178,8 +198,49 @@ def solve_puzzle(puzzle):
         puzzle = inference_rule_1(copy.deepcopy(puzzle))
         puzzle = inference_rule_2(copy.deepcopy(puzzle))
     # recurse here on all possible values of some square
+    if check_puzzle_done(puzzle):
+        return puzzle
+    else:
+        print "needing to guess"
+        print "current puzzle:"
+        print_puzzle(puzzle)
+        square = get_next_square(puzzle)
 
-    return puzzle
+        print puzzle[1][square[0]][square[1]][1]
+
+        for guess in puzzle[1][square[0]][square[1]][1]:
+            print guess, square[0], square[1], depth
+            rec_puzzle = copy.deepcopy(puzzle)
+            rec_puzzle[1][square[0]][square[1]][0] = guess
+            rec_puzzle[1][square[0]][square[1]][1] = []
+
+            rec_puzzle = solve_puzzle(rec_puzzle,depth+1)
+
+            if check_puzzle_done(rec_puzzle):
+                return rec_puzzle
+
+        return puzzle
+
+
+def get_next_square(puzzle):
+
+    spot = [0,0]
+
+    min_amount = 10;
+    row_c = 0
+    for row in puzzle[1]:
+        col_c = 0
+        for box in row:
+            if len(box[1]) < min_amount and not(box[0]):
+                spot[0] = row_c
+                spot[1] = col_c
+                min_amount = len(box[1])
+            col_c += 1
+        row_c += 1
+
+    return spot
+
+
 
 def simple_add(puzzle):
     num_change = 0
@@ -220,7 +281,7 @@ def main():
     for puzzle in problems:
         print_pattern(puzzle)
         print "====================================="
-        p = solve_puzzle(build_puzzle(puzzle))
+        p = solve_puzzle(build_puzzle(puzzle),0)
 
         print_puzzle(p)
         print check_puzzle_done(p)
