@@ -2,21 +2,22 @@
 # Dylan Jones
 
 # TODO:
-#   - Implement backtracking (ie trying a value and seeing how the puzzle goes)
-#       - Implement based on which empty squre you see first
-#       - Implement tracker for number of backtracks needed
+
 #   - Implement naked triple rule
 #   - Comment code!
 
 import re
 import copy
 
+# Function to read in sudoku puzzles from file
 def file_read(flag):
 
     puzzles = []
 
+    # The read in puzzle consists of a difficulty and a puzzle
     sudoku_puzzle = [[],[]]
 
+    # Open test file with only two puzzles vs full puzzle list
     if flag == 0:
         f = open('test.txt')
     else:
@@ -24,6 +25,7 @@ def file_read(flag):
 
     num_lines = 0
 
+    # Loop through the file and extract the information
     for line in f:
         if re.match('\d{3}\s\d{3}\s\d{3}',line):
             line = line.replace(' ','')
@@ -49,25 +51,30 @@ def file_read(flag):
 
     return puzzles
 
+# Function to print a pattern in a visually pleasing way
 def print_pattern(pattern):
 
     col_count = 0
     print pattern[0]
+    print '    0 1 2   3 4 5   6 7 8'
+    print '   ----------------------'
     for item in pattern[1]:
         row_count = 0
+        print col_count, '|',
         for char in item:
             if char == 0:
                 print '*',
             else:
                 print char,
             row_count += 1
-            if row_count % 3 == 0 and row_count != 9:
+            if row_count % 3 == 0:
                 print '|',
         print
         col_count += 1
-        if col_count % 3 == 0 and col_count != 9:
-            print "---------------------"
+        if col_count % 3 == 0:
+            print "   ----------------------"
 
+# Function to print out a puzzle in a visually pleasing way
 def print_puzzle(puzzle):
     col_count = 0
     print puzzle[0]
@@ -192,11 +199,13 @@ def solve_puzzle(puzzle, depth):
 
     global num_backtracks
 
+    # Doing the simple inference until no new information is gained
     puzzle = inference_rule_1(copy.deepcopy(puzzle))
     puzzle = inference_rule_2(copy.deepcopy(puzzle))
     while (simple_add(puzzle) > 0):
         puzzle = inference_rule_1(copy.deepcopy(puzzle))
         puzzle = inference_rule_2(copy.deepcopy(puzzle))
+
     # recurse here on all possible values of some square
     if check_puzzle_done(puzzle):
         return puzzle
@@ -237,6 +246,7 @@ def get_next_square(puzzle, flag):
 
         return spot
     else:
+
         row_c = 0
         for row in puzzle[1]:
             col_c = 0
@@ -245,6 +255,8 @@ def get_next_square(puzzle, flag):
                     spot[0] = row_c
                     spot[1] = col_c
                     return spot
+                col_c += 1
+            row_c += 1
 
 
 def simple_add(puzzle):
@@ -286,15 +298,8 @@ def main():
 
     for puzzle in problems:
         num_backtracks = 0
-        print_pattern(puzzle)
-        print "====================================="
+
         p = solve_puzzle(build_puzzle(puzzle),0)
-
-        print_puzzle(p)
-        print check_puzzle_done(p)
-
-        print "====================================="
-        print "====================================="
 
         for item in result_tracker:
             if item[0] == puzzle[0]:
@@ -302,6 +307,12 @@ def main():
 
                 if check_puzzle_done(p):
                     item[2] += 1
+                else:
+                    print_pattern(puzzle)
+                    print "====================================="
+                    print_puzzle(p)
+                    print "====================================="
+                    print "====================================="
 
                 item[3] += num_backtracks
 

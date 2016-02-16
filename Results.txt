@@ -10,3 +10,17 @@ one possible value or is the only one in its row / column / box that can take
 on that value fill it with that value
 
 [['Easy', 23, 23], ['Medium', 21, 21], ['Hard', 18, 14], ['Evil', 15, 3]]
+
+------------------------------------------------------------------------------
+
+Results for using first and second rule of inference. Also using backprop with
+simple selection for next square i.e. the next empty square
+
+[['Easy', 23, 23, 0], ['Medium', 21, 21, 0], ['Hard', 18, 18, 14], ['Evil', 15, 15, 36]]
+
+------------------------------------------------------------------------------
+
+Results for using first and second rule of inference. Also using backprop with
+more complex selection where square with least values is selected
+
+[['Easy', 23, 23, 0], ['Medium', 21, 21, 0], ['Hard', 18, 18, 5], ['Evil', 15, 15, 12]]
