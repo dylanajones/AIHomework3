@@ -190,7 +190,7 @@ def inference_rule_2(puzzle):
 
 def solve_puzzle(puzzle, depth):
 
-    print "solve_puzzle called"
+    global num_backtracks
 
     puzzle = inference_rule_1(copy.deepcopy(puzzle))
     puzzle = inference_rule_2(copy.deepcopy(puzzle))
@@ -201,15 +201,9 @@ def solve_puzzle(puzzle, depth):
     if check_puzzle_done(puzzle):
         return puzzle
     else:
-        print "needing to guess"
-        print "current puzzle:"
-        print_puzzle(puzzle)
-        square = get_next_square(puzzle)
-
-        print puzzle[1][square[0]][square[1]][1]
+        square = get_next_square(puzzle, 1)
 
         for guess in puzzle[1][square[0]][square[1]][1]:
-            print guess, square[0], square[1], depth
             rec_puzzle = copy.deepcopy(puzzle)
             rec_puzzle[1][square[0]][square[1]][0] = guess
             rec_puzzle[1][square[0]][square[1]][1] = []
@@ -218,28 +212,39 @@ def solve_puzzle(puzzle, depth):
 
             if check_puzzle_done(rec_puzzle):
                 return rec_puzzle
+            else:
+                num_backtracks += 1
 
         return puzzle
 
 
-def get_next_square(puzzle):
+def get_next_square(puzzle, flag):
 
     spot = [0,0]
+    if flag == 0:
 
-    min_amount = 10;
-    row_c = 0
-    for row in puzzle[1]:
-        col_c = 0
-        for box in row:
-            if len(box[1]) < min_amount and not(box[0]):
-                spot[0] = row_c
-                spot[1] = col_c
-                min_amount = len(box[1])
-            col_c += 1
-        row_c += 1
+        min_amount = 10;
+        row_c = 0
+        for row in puzzle[1]:
+            col_c = 0
+            for box in row:
+                if len(box[1]) < min_amount and not(box[0]):
+                    spot[0] = row_c
+                    spot[1] = col_c
+                    min_amount = len(box[1])
+                col_c += 1
+            row_c += 1
 
-    return spot
-
+        return spot
+    else:
+        row_c = 0
+        for row in puzzle[1]:
+            col_c = 0
+            for box in row:
+                if not(box[0]):
+                    spot[0] = row_c
+                    spot[1] = col_c
+                    return spot
 
 
 def simple_add(puzzle):
@@ -275,10 +280,12 @@ def check_puzzle_done(puzzle):
     return True
 
 def main():
+    global num_backtracks
     problems = file_read(1)
-    result_tracker = [['Easy',0,0],['Medium',0,0],['Hard',0,0],['Evil',0,0]]
+    result_tracker = [['Easy',0,0,0],['Medium',0,0,0],['Hard',0,0,0],['Evil',0,0,0]]
 
     for puzzle in problems:
+        num_backtracks = 0
         print_pattern(puzzle)
         print "====================================="
         p = solve_puzzle(build_puzzle(puzzle),0)
@@ -296,8 +303,10 @@ def main():
                 if check_puzzle_done(p):
                     item[2] += 1
 
+                item[3] += num_backtracks
+
     print result_tracker
 
-
+num_backtracks = 0
 print "Starting"
 main()
