@@ -195,6 +195,65 @@ def inference_rule_2(puzzle):
         row += 1
     return puzzle
 
+def naked_double(puzzle):
+    row = 0
+    for row_l in puzzle[1]:
+        col = 0
+        for box in row_l:
+            if not(box[0]):
+                if len(box[1]) == 2:
+                    # Looking through the row
+                    col_count = 0
+                    for item in row_l:
+                        #print row, col, col_count
+                        if col_count != col:
+                            if not(item[0]):
+                                if (len(set(box[1]+item[1])) == 2) and (len(box[1]) > 1) and (len(item[1]) > 1):
+
+                                    double = list(set(box[1]+item[1]))
+                                    for thing in row_l:
+                                        if not(thing[0]):
+                                            for guess in set(box[1]+item[1]):
+                                                if thing[1].count(guess) > 0:
+                                                    thing[1].remove(guess)
+                                    box[1] = copy.deepcopy(double)
+                                    item[1] = copy.deepcopy(double)
+                        col_count += 1
+
+                    # Looking through the column
+                    for i in range(len(puzzle[1])):
+                        if i != row:
+                            if not(puzzle[1][i][col][0]):
+                                if (len(set(box[1]+puzzle[1][i][col][1])) == 2) and (len(box[1]) > 1) and (len(puzzle[1][i][col][1]) > 1):
+                                    double = list(set(box[1]+puzzle[1][i][col][1]))
+                                    for j in range(len(puzzle[1])):
+                                        if not(puzzle[1][j][col][0]):
+                                            for guess in set(box[1]+puzzle[1][i][col][1]):
+                                                if puzzle[1][j][col][1].count(guess) > 0:
+                                                    puzzle[1][j][col][1].remove(guess)
+                                    box[1] = copy.deepcopy(double)
+                                    puzzle[1][i][col][1] = copy.deepcopy(double)
+
+                    # Looking through the box
+                    for i in range(int(row/3)*3,int(row/3)*3+3):
+                        for j in range(int(col/3)*3,int(col/3)*3+3):
+                            if (i != row) and (j != col):
+                                if not(puzzle[1][i][j][0]):
+                                    if (len(set(box[1]+puzzle[1][i][j][1])) == 2) and (len(box[1]) > 1) and (len(puzzle[1][i][j][1]) > 1):
+                                        double = list(set(box[1]+puzzle[1][i][j][1]))
+                                        for u in range(int(row/3)*3,int(row/3)*3+3):
+                                            for v in range(int(col/3)*3,int(col/3)*3+3):
+                                                if not(puzzle[1][u][v][0]):
+                                                    for guess in set(box[1]+puzzle[1][i][j][1]):
+                                                        if puzzle[1][u][v][1].count(guess) > 0:
+                                                            puzzle[1][u][v][1].remove(guess)
+                                        box[1] = copy.deepcopy(double)
+                                        puzzle[1][i][j][1] = copy.deepcopy(double)
+            col += 1
+        row += 1
+
+    return puzzle
+
 def solve_puzzle(puzzle, depth):
 
     global num_backtracks
@@ -202,15 +261,18 @@ def solve_puzzle(puzzle, depth):
     # Doing the simple inference until no new information is gained
     puzzle = inference_rule_1(copy.deepcopy(puzzle))
     puzzle = inference_rule_2(copy.deepcopy(puzzle))
+    puzzle = naked_double(copy.deepcopy(puzzle))
     while (simple_add(puzzle) > 0):
         puzzle = inference_rule_1(copy.deepcopy(puzzle))
         puzzle = inference_rule_2(copy.deepcopy(puzzle))
+        puzzle = naked_double(copy.deepcopy(puzzle))
 
     # recurse here on all possible values of some square
     if check_puzzle_done(puzzle):
         return puzzle
     else:
-        square = get_next_square(puzzle, 1)
+        #return puzzle
+        square = get_next_square(puzzle, 0)
 
         for guess in puzzle[1][square[0]][square[1]][1]:
             rec_puzzle = copy.deepcopy(puzzle)

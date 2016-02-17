@@ -24,3 +24,17 @@ Results for using first and second rule of inference. Also using backprop with
 more complex selection where square with least values is selected
 
 [['Easy', 23, 23, 0], ['Medium', 21, 21, 0], ['Hard', 18, 18, 5], ['Evil', 15, 15, 12]]
+
+------------------------------------------------------------------------------
+
+Results using first, second and naked double rules of inference. Also using
+backprop with simple square selection
+
+[['Easy', 23, 23, 0], ['Medium', 21, 21, 0], ['Hard', 18, 18, 2], ['Evil', 15, 15, 31]]
+
+------------------------------------------------------------------------------
+
+Results using first, second and naked double rules of inference. Also using
+backprop with more complex square selection
+
+[['Easy', 23, 23, 0], ['Medium', 21, 21, 0], ['Hard', 18, 18, 2], ['Evil', 15, 15, 8]]
