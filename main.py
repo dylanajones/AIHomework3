@@ -254,7 +254,87 @@ def naked_double(puzzle):
 
     return puzzle
 
+def naked_triple(puzzle):
+    #loop through every square
+    #loop through every box in row / col / box twice
+    # if the groups mkae a naked triple then remove
+    row = 0
+
+    for row_l in puzzle[1]:
+        col = 0
+        for box in row_l:
+            if not(box[0]) and (len(box[0]) != 1) and (len(box[0]) <= 3):
+                # Looking at the row for second box
+                col_2 = 0
+                for second_box in row_l:
+                    if not(second_box[0]) and (len(second_box[1]) != 1) and (len(second_box[1]) <= 3) and (col_2 != col) and (len(set(box[1]+second_box[1])) <= 3):
+                        col_3 = 0
+                        for third_box in row_l:
+                            if not(third_box[0]) and (len(third_box[0]) != 1) and (len(third_box[0]) <= 3) and (col_2 != col_3) and (col != col_3) and (len(set(box[0]+second_box[0]+third_box[0])) == 3):
+                                three = list(set(box[0]+second_box[0]+third_box[0]))
+
+                                guess_col = 0
+                                for guess_box in row_l:
+                                    if not(guess_box[0]) and (guess_col != col) and (guess_col != col_2) and (guess_col != col_3):
+                                        for guess in three:
+                                            if guess_box[1].count(guess) > 0:
+                                                guess_box[1].remove(guess)
+                                    guess_col += 1
+                            col_3 += 1
+                        # Looking for 3rd box in the row
+
+                    col_2 += 1
+
+                # Looking at the col for second box
+                row_2 = 0
+                for i in range(len(puzzle[1])):
+                    if not(puzzle[1][i][col][0]) and (len(puzzle[1][i][col][1]) != 1) and (len(puzzle[1][i][col][1]) <= 3) and (row_2 != row) and (len(set(box[1]+puzzle[1][i][col][1])) <= 3):
+                        row_3 = 0
+                        for j in range(len(puzzle[1])):
+                            if not(puzzle[1][j][col][0]) and (len(puzzle[1][j][col][1]) != 1) and (len(puzzle[1][j][col][1]) <= 3) and (row_3 != row_2) and (row_3 != row) and (len(set(box[1]+puzzle[1][i][col][1]+puzzle[1][j][col][1])) == 3):
+
+                                three = list(set(box[1]+puzzle[1][i][col][1]+puzzle[1][j][col][1]))
+                                guess_row = 0
+
+                                for k in range(len(puzzle[1])):
+                                    if not(puzzle[1][k][col][0]) and (guess_row != row) and (guess_row != row_2) and (guess_row != row_3):
+                                        for guess in three:
+                                            if puzzle[1][k][col][1].count(guess) > 0:
+                                                puzzle[1][k][col][1].remove(guess)
+                                    guess_row += 1
+
+                        row_3 += 1
+                    row_2 += 1
+
+                # Looking at the box for second box
+                for i in range(int(row/3)*3,int(row/3)*3+3):
+                    for j in range(int(col/3)*3,int(col/3)*3+3):
+                        if (i != row) and (j != col):
+                            if not(puzzle[1][i][j][0]) and (len(puzzle[1][i][j][1]) != 1) and (len(puzzle[1][i][j][1]) <= 3) and (len(set(box[1]+puzzle[1][i][j][1])) <= 3):
+                                for m in range(int(row/3)*3,int(row/3)*3+3):
+                                    for n in range(int(col/3)*3,int(col/3)*3+3):
+                                        if (m != row) and (n != col) and (m != i) and (n != j):
+                                            if not(puzzle[1][m][n][0]) and (len(puzzle[1][m][n][1]) != 1) and (len(puzzle[1][m][n][1]) <= 3) and (len(set(box[1]+puzzle[1][i][j][1]+puzzle[1][m][n][1])) <= 3):
+
+                                                three = list(set(box[1]+puzzle[1][i][j][1]+puzzle[1][m][n][1]))
+
+                                                for x in range(int(row/3)*3,int(row/3)*3+3):
+                                                    for y in range(int(col/3)*3,int(col/3)*3+3):
+                                                        if (x != row) and (y != col) and (x != i) and (y != j) and (x != m) and (y != n):
+                                                            if not(puzzle[1][x][y][0]):
+                                                                for guess in three:
+                                                                    if puzzle[1][x][y][1].count(guess) > 0:
+                                                                        puzzle[1][x][y][1].remove(guess)
+
+        col += 1
+    row += 1
+
+    return puzzle
+
 def solve_puzzle(puzzle, depth):
+
+    # if depth > 0:
+    #     print "MADE A GUESS"
 
     global num_backtracks
 
@@ -262,29 +342,31 @@ def solve_puzzle(puzzle, depth):
     puzzle = inference_rule_1(copy.deepcopy(puzzle))
     puzzle = inference_rule_2(copy.deepcopy(puzzle))
     puzzle = naked_double(copy.deepcopy(puzzle))
+    puzzle = naked_triple(copy.deepcopy(puzzle))
     while (simple_add(puzzle) > 0):
         puzzle = inference_rule_1(copy.deepcopy(puzzle))
         puzzle = inference_rule_2(copy.deepcopy(puzzle))
         puzzle = naked_double(copy.deepcopy(puzzle))
+        puzzle = naked_triple(copy.deepcopy(puzzle))
 
     # recurse here on all possible values of some square
     if check_puzzle_done(puzzle):
         return puzzle
     else:
-        #return puzzle
-        square = get_next_square(puzzle, 0)
 
-        for guess in puzzle[1][square[0]][square[1]][1]:
-            rec_puzzle = copy.deepcopy(puzzle)
-            rec_puzzle[1][square[0]][square[1]][0] = guess
-            rec_puzzle[1][square[0]][square[1]][1] = []
-
-            rec_puzzle = solve_puzzle(rec_puzzle,depth+1)
-
-            if check_puzzle_done(rec_puzzle):
-                return rec_puzzle
-            else:
-                num_backtracks += 1
+        # square = get_next_square(puzzle, 1)
+        #
+        # for guess in puzzle[1][square[0]][square[1]][1]:
+        #     rec_puzzle = copy.deepcopy(puzzle)
+        #     rec_puzzle[1][square[0]][square[1]][0] = guess
+        #     rec_puzzle[1][square[0]][square[1]][1] = []
+        #
+        #     rec_puzzle = solve_puzzle(rec_puzzle,depth+1)
+        #
+        #     if check_puzzle_done(rec_puzzle):
+        #         return rec_puzzle
+        #     else:
+        #         num_backtracks += 1
 
         return puzzle
 
@@ -323,7 +405,7 @@ def get_next_square(puzzle, flag):
 
 def simple_add(puzzle):
     num_change = 0
-
+    #print puzzle
     for row in puzzle[1]:
         for box in row:
             if len(box[1]) == 1:
@@ -361,7 +443,11 @@ def main():
     for puzzle in problems:
         num_backtracks = 0
 
+
+
         p = solve_puzzle(build_puzzle(puzzle),0)
+
+
 
         for item in result_tracker:
             if item[0] == puzzle[0]:
