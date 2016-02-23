@@ -1,11 +1,6 @@
 # AI Homework 3 - Sudoku Solver
 # Dylan Jones
 
-# TODO:
-
-#   - Implement naked triple rule
-#   - Comment code!
-
 import re
 import copy
 
@@ -96,6 +91,8 @@ def print_puzzle(puzzle):
         if col_count % 3 == 0:
             print "   ----------------------"
 
+# Function to build a puzzle from a given pattern - a pattern stores only the
+#   square information while a puzzle must also store the domains
 def build_puzzle(pattern):
     puzzle = [[],[]]
     puzzle[0] = pattern[0]
@@ -112,7 +109,9 @@ def build_puzzle(pattern):
         puzzle[1].append(row)
 
     return puzzle
-# Function to infer about what are possible for a box
+
+# Function to infer about what are possible for a box - it removes all numbers
+#   from the domain that are already filled in in the row / col / 3x3 box
 def inference_rule_1(puzzle):
     row = 0
     for row_l in puzzle[1]:
@@ -120,12 +119,15 @@ def inference_rule_1(puzzle):
         for box in row_l:
             if not(box[0]):
                 to_remove = []
+                # Search through the row
                 for boxes in row_l:
                     if boxes[0]:
                         to_remove.append(boxes[0])
+                # Search through the column
                 for i in range(len(puzzle[1])):
                     if puzzle[1][i][col][0]:
                         to_remove.append(puzzle[1][i][col][0])
+                # Search through the 3x3 box
                 for i in range(int(row/3)*3,int(row/3)*3+3):
                     for j in range(int(col/3)*3,int(col/3)*3+3):
                         if puzzle[1][i][j][0]:
@@ -142,6 +144,8 @@ def inference_rule_1(puzzle):
 
     return puzzle
 
+# Function to infer about the domain of the square. If it is the only square in
+#   either its row / col / box that can take on a value it is that value
 def inference_rule_2(puzzle):
     row = 0
     for row_l in puzzle[1]:
@@ -195,6 +199,7 @@ def inference_rule_2(puzzle):
         row += 1
     return puzzle
 
+# Function to implement the naked double rule
 def naked_double(puzzle):
     row = 0
     for row_l in puzzle[1]:
@@ -254,10 +259,8 @@ def naked_double(puzzle):
 
     return puzzle
 
+# Function to implement the naked triple rule
 def naked_triple(puzzle):
-    #loop through every square
-    #loop through every box in row / col / box twice
-    # if the groups mkae a naked triple then remove
     row = 0
 
     for row_l in puzzle[1]:
@@ -331,10 +334,8 @@ def naked_triple(puzzle):
 
     return puzzle
 
+# Main loop to solve the puzzle
 def solve_puzzle(puzzle, depth):
-
-    # if depth > 0:
-    #     print "MADE A GUESS"
 
     global num_backtracks
 
@@ -354,26 +355,27 @@ def solve_puzzle(puzzle, depth):
         return puzzle
     else:
 
-        # square = get_next_square(puzzle, 1)
-        #
-        # for guess in puzzle[1][square[0]][square[1]][1]:
-        #     rec_puzzle = copy.deepcopy(puzzle)
-        #     rec_puzzle[1][square[0]][square[1]][0] = guess
-        #     rec_puzzle[1][square[0]][square[1]][1] = []
-        #
-        #     rec_puzzle = solve_puzzle(rec_puzzle,depth+1)
-        #
-        #     if check_puzzle_done(rec_puzzle):
-        #         return rec_puzzle
-        #     else:
-        #         num_backtracks += 1
+        square = get_next_square(puzzle, 1)
+
+        for guess in puzzle[1][square[0]][square[1]][1]:
+            rec_puzzle = copy.deepcopy(puzzle)
+            rec_puzzle[1][square[0]][square[1]][0] = guess
+            rec_puzzle[1][square[0]][square[1]][1] = []
+
+            rec_puzzle = solve_puzzle(rec_puzzle,depth+1)
+
+            if check_puzzle_done(rec_puzzle):
+                return rec_puzzle
+            else:
+                num_backtracks += 1
 
         return puzzle
 
-
+# Function to get the next square with the strategy based upon the flag given
 def get_next_square(puzzle, flag):
 
     spot = [0,0]
+    # Select the most constrained slot
     if flag == 0:
 
         min_amount = 10;
@@ -389,6 +391,7 @@ def get_next_square(puzzle, flag):
             row_c += 1
 
         return spot
+    # Just select the first empty slot found
     else:
 
         row_c = 0
@@ -402,7 +405,7 @@ def get_next_square(puzzle, flag):
                 col_c += 1
             row_c += 1
 
-
+# Function to go thruogh the puzzle and update any square with only one possiblity
 def simple_add(puzzle):
     num_change = 0
     #print puzzle
@@ -417,6 +420,7 @@ def simple_add(puzzle):
 
     return num_change
 
+# Function to check if the ouzzle can still be solved
 def check_puzzle(puzzle):
 
     for row in puzzle[1]:
@@ -426,6 +430,7 @@ def check_puzzle(puzzle):
 
     return puzzle
 
+# Function to check if all squares have been filled in
 def check_puzzle_done(puzzle):
 
     for row in puzzle[1]:
@@ -435,6 +440,7 @@ def check_puzzle_done(puzzle):
 
     return True
 
+# main function to run which tracks results
 def main():
     global num_backtracks
     problems = file_read(1)
@@ -443,11 +449,7 @@ def main():
     for puzzle in problems:
         num_backtracks = 0
 
-
-
         p = solve_puzzle(build_puzzle(puzzle),0)
-
-
 
         for item in result_tracker:
             if item[0] == puzzle[0]:
